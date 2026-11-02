@@ -6,10 +6,11 @@ import shutil
 
 import pytest
 
-from risklib import pdfreport as P
-from risklib import synthetic
-from risklib.data import save_prices_csv
-from risklib.report import data_start, resolve_config, run
+from risklib.config import data_start, resolve_config
+from risklib.data import synthetic
+from risklib.data.sources import save_prices_csv
+from risklib.output import pdf as P
+from risklib.pipeline import run
 
 
 def _write_market(path, n, n_assets, seed):

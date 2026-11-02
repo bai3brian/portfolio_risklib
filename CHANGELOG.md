@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.8.0
+Package reorganized into four stages; no change to any number (the sample
+report's metrics.json is identical to 0.7.0).
+- `risklib/data/`: `sources.py` (download, CSV, sector lookup; was part of
+  `data.py` and `report.py`) and `synthetic.py`.
+- `risklib/preprocessing/`: `panel.py` (cleaning, proxy backfill, returns;
+  was `data.py`) and `portfolio.py` (holdings, `Portfolio`).
+- `risklib/models/`: `factors`, `volatility`, `covariance`, `risk`, `stress`,
+  `backtest`, `optimize`, plus `performance.py` (statistics and concentration,
+  split out of `portfolio.py`).
+- `risklib/output/`: `charts.py`, `markdown.py`, `metrics.py` (split out of
+  `report.py`) and `pdf.py` (was `pdfreport.py`).
+- `config.py` (defaults, `load_config`, `data_start`) and `pipeline.py`
+  (`run`) replace `report.py`. Imports change accordingly, e.g.
+  `from risklib.pipeline import run`, `from risklib.models import risk`.
+
 ## 0.7.0
 Estimators moved onto standard packages; numbers for the deterministic models
 are unchanged to machine precision.

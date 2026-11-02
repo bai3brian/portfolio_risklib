@@ -1,6 +1,6 @@
 # Risk report: Synthetic demo portfolio
 
-Generated 2026-11-02 01:18. Data: 2019-01-01 → 2026-09-22 (2016 trading days, 6 holdings). Value 100,000 (config override). Source: `csv`.
+Generated 2026-11-02 15:22. Data: 2019-01-01 → 2026-09-22 (2016 trading days, 6 holdings). Value 100,000 (config override). Source: `csv`.
 
 ## 1. Portfolio
 
@@ -181,7 +181,7 @@ Best model by coverage among those passing conditional coverage: **garch_normal*
 | equal_weight | -0.0831 | 0.2031 | -0.3258 | -0.6472 | -0.1285 | 0.0000 |
 | current | -0.0619 | 0.2046 | -0.2102 | -0.6302 | -0.0983 | 0.0000 |
 
-Min-variance and risk parity need no expected-return estimate; max-Sharpe and target-vol allocators remain in `risklib.optimize` but are not reported because their out-of-sample results are dominated by return-estimation error.
+Min-variance and risk parity need no expected-return estimate; max-Sharpe and target-vol allocators remain in `risklib.models.optimize` but are not reported because their out-of-sample results are dominated by return-estimation error.
 
 
 ![walk_forward](charts/walk_forward.png)

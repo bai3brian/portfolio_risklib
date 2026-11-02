@@ -1,13 +1,13 @@
-"""Tests for risklib.optimize (synthetic data)."""
+"""Tests for risklib.models.optimize (synthetic data)."""
 
 import numpy as np
 import pandas as pd
 import pytest
 
-from risklib import covariance as cv
-from risklib import optimize as opt
-from risklib import synthetic
-from risklib.portfolio import Portfolio
+from risklib.data import synthetic
+from risklib.models import covariance as cv
+from risklib.models import optimize as opt
+from risklib.preprocessing.portfolio import Portfolio
 
 
 def make():

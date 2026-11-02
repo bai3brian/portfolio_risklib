@@ -5,13 +5,12 @@ import pandas as pd
 import pytest
 from scipy import stats
 
-from risklib import backtest as bt
-from risklib import factors as fm
-from risklib import risk
-from risklib import stress
-from risklib import synthetic
-from risklib.data import build_panel
-from risklib.portfolio import Portfolio
+from risklib.data import synthetic
+from risklib.models import backtest as bt
+from risklib.models import factors as fm
+from risklib.models import risk, stress
+from risklib.preprocessing.panel import build_panel
+from risklib.preprocessing.portfolio import Portfolio
 
 
 def market():

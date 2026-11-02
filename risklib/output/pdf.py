@@ -541,7 +541,7 @@ def snapshot_page(d: dict, checks: list[Check], labels: Mapping[str, str] | None
         take.append(f"Most damaging hypothetical: {tex_escape(d['worst_hypo'][0])} at {signed_pct(d['worst_hypo'][1])}.")
     if take:
         L.append(r"\begin{note}\textbf{Takeaways.} " + " ".join(take) + r"\end{note}")
-    L.append(r"{\scriptsize\color{muted} Thresholds are defaults in \texttt{risklib.pdfreport.DEFAULT\_THRESHOLDS}; override them under \texttt{pdf: thresholds:} in the portfolio config. Colours flag where to look, not what to do.}")
+    L.append(r"{\scriptsize\color{muted} Thresholds are defaults in \texttt{risklib.output.pdf.DEFAULT\_THRESHOLDS}; override them under \texttt{pdf: thresholds:} in the portfolio config. Colours flag where to look, not what to do.}")
     return "\n".join(L)
 
 

@@ -32,7 +32,7 @@ import pandas as pd
 from arch import arch_model
 from scipy import stats
 
-from .data import TRADING_DAYS
+from .. import TRADING_DAYS
 
 # arch is fitted on percent returns, the scale its optimizer is tuned for;
 # parameters and variances are converted back to return units.

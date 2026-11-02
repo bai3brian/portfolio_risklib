@@ -83,7 +83,7 @@ ranking much sharper.
 - Andersen, Bollerslev, Diebold & Labys (2003), "Modeling and Forecasting
   Realized Volatility", *Econometrica* — the foundational RV paper.
 
-**What we'd build.** `download_ohlc` in `data.py`, `realized.py` with
+**What we'd build.** `download_ohlc` in `data/sources.py`, `realized.py` with
 `parkinson`, `garman_klass`, `HAR`. A small effort with a likely large
 QLIKE improvement.
 

@@ -34,10 +34,10 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--quiet", action="store_true")
     args = ap.parse_args(argv)
 
-    from .portfolio import load_config
+    from .config import load_config
 
     if args.cmd == "pdf":
-        from .pdfreport import render_pdf
+        from .output.pdf import render_pdf
 
         th = (load_config(args.config).get("pdf") or {}).get("thresholds") if args.config else None
         out = render_pdf(args.report_md, thresholds=th, compile=not args.no_compile, verbose=not args.quiet)
@@ -45,7 +45,9 @@ def main(argv: list[str] | None = None) -> int:
             print(f"wrote {out}")
         return 0
 
-    from .report import fetch_data, resolve_config, run
+    from .config import resolve_config
+    from .data.sources import fetch_data
+    from .pipeline import run
 
     cfg = load_config(args.config)
     if args.offline:

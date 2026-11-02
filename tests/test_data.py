@@ -1,12 +1,13 @@
-"""Tests for risklib.data and risklib.portfolio (synthetic data, no network)."""
+"""Tests for risklib.preprocessing and risklib.models.performance (synthetic data, no network)."""
 
 import numpy as np
 import pandas as pd
 import pytest
 
-from risklib import data
-from risklib import portfolio as pf
-from risklib import synthetic
+from risklib.data import synthetic
+from risklib.models import performance as perf
+from risklib.preprocessing import panel as data
+from risklib.preprocessing import portfolio as pf
 
 
 # ---------------------------------------------------------------------------
@@ -256,7 +257,7 @@ def test_buy_and_hold_matches_wealth_path():
 def test_performance_summary_on_constant_return():
     # a constant 0.04% daily log return -> zero vol, known CAGR
     r = pd.Series(0.0004, index=pd.bdate_range("2020-01-01", periods=504))
-    s = pf.performance_summary(r, kind="log")
+    s = perf.performance_summary(r, kind="log")
     assert s["ann_return"] == pytest.approx(np.exp(0.0004 * 252) - 1)
     assert s["ann_vol"] == pytest.approx(0.0, abs=1e-12)
     assert s["max_drawdown"] == pytest.approx(0.0)
@@ -266,7 +267,7 @@ def test_performance_summary_on_constant_return():
 def test_max_drawdown_known_value():
     # up 10%, down 20%, up 5% -> peak 1.1, trough 0.88 -> dd = -20%
     r = pd.Series([0.10, -0.20, 0.05], index=pd.bdate_range("2020-01-01", periods=3))
-    assert pf.max_drawdown(r, kind="simple") == pytest.approx(-0.20)
+    assert perf.max_drawdown(r, kind="simple") == pytest.approx(-0.20)
 
 
 def test_from_prices_rejects_missing_ticker():
@@ -284,7 +285,7 @@ def test_from_prices_reports_dropped_short_history():
 
 
 def test_backfill_with_proxy_matches_proxy_returns_and_keeps_real_data():
-    from risklib.data import backfill_with_proxy
+    from risklib.preprocessing.panel import backfill_with_proxy
 
     idx = pd.bdate_range("2020-01-01", periods=8)
     proxy = pd.Series([10, 11, 12, 11, 13, 14, 15, 16], index=idx, dtype=float)
@@ -303,7 +304,7 @@ def test_backfill_with_proxy_matches_proxy_returns_and_keeps_real_data():
 
 
 def test_backfill_no_op_when_full_history():
-    from risklib.data import backfill_with_proxy
+    from risklib.preprocessing.panel import backfill_with_proxy
 
     idx = pd.bdate_range("2020-01-01", periods=5)
     prices = pd.DataFrame({"A": np.arange(5) + 1.0}, index=idx)
@@ -377,19 +378,19 @@ def test_holdings_value_and_sectors():
 
 def test_concentration_and_sector_table():
     w = pd.Series({"A": 0.5, "B": 0.25, "C": 0.25})
-    c = pf.concentration(w)
+    c = perf.concentration(w)
     assert c["hhi_weight"] == pytest.approx(0.375) and c["effective_n_weight"] == pytest.approx(1 / 0.375)
     risk_pct = pd.Series({"A": 80.0, "B": 10.0, "C": 10.0})
-    c2 = pf.concentration(w, risk_pct)
+    c2 = perf.concentration(w, risk_pct)
     assert c2["effective_n_risk"] < c2["effective_n_weight"]
-    st = pf.sector_table(w, {"A": "Tech", "B": "Tech"}, risk_pct)
+    st = perf.sector_table(w, {"A": "Tech", "B": "Tech"}, risk_pct)
     assert st.loc["Tech", "weight_%"] == pytest.approx(75.0) and st.loc["Unknown", "n_holdings"] == 1
     assert st.loc["Tech", "risk_%"] == pytest.approx(90.0)
 
 
 def test_trailing_performance_windows():
     r = pd.Series(np.random.default_rng(0).standard_normal(1000) * 0.01, index=pd.bdate_range("2019-01-01", periods=1000))
-    t = pf.trailing_performance(r)
+    t = perf.trailing_performance(r)
     assert list(t.index) == ["1y", "3y", "full"]  # 5y (1260) > sample -> skipped
     assert t.loc["1y", "n_obs"] == 252 and t.loc["full", "n_obs"] == 1000
 

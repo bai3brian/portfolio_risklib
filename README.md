@@ -52,23 +52,36 @@ its reference and its role in the report.
 
 ```
 risklib/
-  data.py         download, cleaning, alignment, returns, proxy backfill
-  portfolio.py    Portfolio object, holdings, concentration, performance statistics
-  factors.py      ETF-proxy factor model with Newey-West OLS
-  volatility.py   EWMA, GARCH, GJR-GARCH, forecast evaluation
-  covariance.py   covariance estimators and diagnostics
-  risk.py         VaR/ES methods, Monte Carlo simulations, attribution, bootstrap intervals
-  stress.py       historical replay and factor shocks
-  backtest.py     rolling VaR forecasts and coverage / ES tests
-  optimize.py     optimizers and walk-forward evaluation
-  report.py       end-to-end pipeline, charts, report.md and metrics.json
-  pdfreport.py    report.md to a LaTeX PDF with a health snapshot
-  synthetic.py    simulated data for tests and the offline demo
-  __main__.py     command-line interface
-tests/            pytest suite (synthetic data only)
-examples/         example config, offline demo, sample output
-docs/             user guide, model catalogue, further reading
+  __main__.py          command-line interface (risklib report | fetch | check | pdf)
+  config.py            config defaults, YAML loading, stress-history start date
+  pipeline.py          runs the four stages below end to end
+  data/                1. where prices come from
+    sources.py         Yahoo Finance download, CSV input/output, sector lookup
+    synthetic.py       simulated markets for the tests and the offline demo
+  preprocessing/       2. raw prices to a clean panel and weights
+    panel.py           validation, gap filling, proxy backfill, alignment, returns
+    portfolio.py       holdings to weights, portfolio returns, Portfolio object
+  models/              3. every risk and performance calculation
+    performance.py     return statistics, drawdowns, concentration, sector table
+    factors.py         ETF-proxy factor model with Newey-West OLS
+    volatility.py      EWMA, GARCH, GJR-GARCH, forecast evaluation
+    covariance.py      sample, EWMA and Ledoit-Wolf covariance
+    risk.py            VaR/ES methods, Monte Carlo, attribution, bootstrap intervals
+    stress.py          historical replay and factor shocks
+    backtest.py        rolling VaR forecasts and coverage / ES tests
+    optimize.py        optimizers and walk-forward evaluation
+  output/              4. results to files
+    charts.py          report figures
+    markdown.py        report.md
+    metrics.py         metrics.json
+    pdf.py             report.md to a LaTeX PDF with a health snapshot
+tests/                 pytest suite (synthetic data only)
+examples/              example config, offline demo, sample output
+docs/                  user guide, model catalogue, further reading
 ```
+
+Dependencies run one way: `data` → `preprocessing` → `models` → `output`,
+with `pipeline.py` calling each stage in turn.
 
 ## Dependencies
 
@@ -77,17 +90,17 @@ All are installed by `pip install -e ".[dev]"` (see `pyproject.toml`).
 | Package | Used in | What it does there |
 |---|---|---|
 | numpy | every module | Array math and linear algebra (Cholesky and eigendecompositions for the Monte Carlo engines), random numbers for Monte Carlo, FHS and bootstrap intervals, empirical quantiles for historical VaR/ES |
-| pandas | every module | Price and return frames, date alignment, rolling windows, CSV input/output; `ewm` computes the EWMA volatility (`volatility.py`) and EWMA covariance (`covariance.py`) |
-| scipy | `risk.py`, `backtest.py`, `volatility.py`, `optimize.py` | `scipy.stats`: normal and Student-t quantiles, densities and fits for parametric VaR/ES, the copula simulations and the t-based backtest models; χ² and binomial distributions for the Kupiec, Christoffersen and Basel traffic-light tests; the normal p-value of the Diebold-Mariano test. `scipy.optimize.minimize`: SLSQP for the long-only optimizers, L-BFGS-B for risk parity |
-| statsmodels | `factors.py` | `OLS` with `cov_type="HAC"`: factor betas, R² and Newey-West standard errors |
-| arch | `volatility.py` (and through it FHS in `risk.py` and the GARCH backtests in `backtest.py`) | `arch_model`: maximum-likelihood fits of GARCH(1,1), GJR-GARCH and Student-t GARCH with robust standard errors; `fix` to roll fitted parameters forward on new data; analytic variance forecasts |
-| scikit-learn | `covariance.py` | `LedoitWolf`: shrinkage covariance used by the Monte Carlo VaR and the walk-forward optimizers |
-| matplotlib | `report.py` | The report charts: conditional volatility, component VaR, stress scenarios, VaR backtest, walk-forward |
-| PyYAML | `portfolio.py` | Reads the portfolio config (`my_portfolio.yaml`) |
-| yfinance | `data.py`, `report.py` | Downloads adjusted daily prices from Yahoo Finance; looks up missing sector labels |
+| pandas | every module | Price and return frames, date alignment, rolling windows, CSV input/output; `ewm` computes the EWMA volatility (`models/volatility.py`) and EWMA covariance (`models/covariance.py`) |
+| scipy | `models/`: `risk.py`, `backtest.py`, `volatility.py`, `optimize.py` | `scipy.stats`: normal and Student-t quantiles, densities and fits for parametric VaR/ES, the copula simulations and the t-based backtest models; χ² and binomial distributions for the Kupiec, Christoffersen and Basel traffic-light tests; the normal p-value of the Diebold-Mariano test. `scipy.optimize.minimize`: SLSQP for the long-only optimizers, L-BFGS-B for risk parity |
+| statsmodels | `models/factors.py` | `OLS` with `cov_type="HAC"`: factor betas, R² and Newey-West standard errors |
+| arch | `models/volatility.py` (and through it FHS in `risk.py` and the GARCH backtests in `backtest.py`) | `arch_model`: maximum-likelihood fits of GARCH(1,1), GJR-GARCH and Student-t GARCH with robust standard errors; `fix` to roll fitted parameters forward on new data; analytic variance forecasts |
+| scikit-learn | `models/covariance.py` | `LedoitWolf`: shrinkage covariance used by the Monte Carlo VaR and the walk-forward optimizers |
+| matplotlib | `output/charts.py` | The report charts: conditional volatility, component VaR, stress scenarios, VaR backtest, walk-forward |
+| PyYAML | `config.py` | Reads the portfolio config (`my_portfolio.yaml`) |
+| yfinance | `data/sources.py` | Downloads adjusted daily prices from Yahoo Finance; looks up missing sector labels |
 | pytest, ruff | `tests/` (development only) | Test suite and linting |
 
-The PDF report (`pdfreport.py`) also needs a LaTeX engine, `pdflatex` or `latexmk` from MiKTeX, MacTeX or TeX Live. It is a system program, not a Python package; without it the report is still written as Markdown and `report.tex`.
+The PDF report (`output/pdf.py`) also needs a LaTeX engine, `pdflatex` or `latexmk` from MiKTeX, MacTeX or TeX Live. It is a system program, not a Python package; without it the report is still written as Markdown and `report.tex`.
 
 ## Command line
 
@@ -114,7 +127,7 @@ written and can be compiled on Overleaf.
 
 ## Notes
 
-Synthetic data is confined to `risklib/synthetic.py`, the tests and the
+Synthetic data is confined to `risklib/data/synthetic.py`, the tests and the
 offline demo; the report pipeline never imports it. `my_portfolio.yaml` and
 `reports/` are git-ignored so personal holdings stay out of the repository.
 The output is a risk description, not investment advice.

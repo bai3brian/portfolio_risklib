@@ -86,7 +86,7 @@ data:
 ## 3. Configuration reference
 
 Everything below is optional except `holdings`. Defaults are in
-`risklib/report.py::DEFAULTS`.
+`risklib/config.py::DEFAULTS`.
 
 ### Top level
 | key | default | meaning |
@@ -271,15 +271,15 @@ one-sided bootstrap probability.
 chosen without seeing the period it was applied to. Compare
 `ledoit_wolf/risk_parity` and `ledoit_wolf/min_variance` to `current` and
 `equal_weight`. `avg_turnover` is Σ|Δw| per rebalance (buys plus sells).
-Max-Sharpe is available in `optimize.py` but not reported, because
+Max-Sharpe is available in `models/optimize.py` but not reported, because
 its out-of-sample results are dominated by expected-return estimation error.
 
 ## 5. Using the modules in a notebook
 
 ```python
-from risklib.data import load_panel, coverage_summary
-from risklib.portfolio import Portfolio
-from risklib import factors, volatility, covariance, risk, stress, backtest, optimize
+from risklib.preprocessing.panel import load_panel, coverage_summary
+from risklib.preprocessing.portfolio import Portfolio
+from risklib.models import factors, volatility, covariance, risk, stress, backtest, optimize
 
 # data (network)
 prices, returns = load_panel(["AAPL", "MSFT", "VTI"], start="2015-01-01", common=False)

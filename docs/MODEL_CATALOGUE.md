@@ -11,7 +11,7 @@ them. Each entry gives the method and its source, what it does, and its
 * **optional**: off by default; switch on through `risk.methods` or `backtest.methods`
 * **library only**: implemented and tested but not shown in the report
 
-## Data (`data.py`)
+## Preprocessing (`preprocessing/panel.py`)
 
 | Method | What it does | Role |
 |---|---|---|
@@ -20,7 +20,7 @@ them. Each entry gives the method and its source, what it does, and its
 | Common-window alignment | Keeps dates on which every asset has a price, giving the rectangular panel the regressions and covariances need. | core |
 | Proxy backfill | Rebuilds a young stock's pre-listing path from a related instrument's returns (former parent, peer or sector ETF). | core |
 
-## Portfolio and performance (`portfolio.py`)
+## Portfolio and performance (`preprocessing/portfolio.py`, `models/performance.py`)
 
 | Method | What it does | Role |
 |---|---|---|
@@ -34,7 +34,7 @@ them. Each entry gives the method and its source, what it does, and its
 | Herfindahl index / effective number of positions (Hirschman 1945; Meucci 2009) | 1/Σs_i² on weight shares and on VaR shares: how many independent bets the book holds. | core |
 | Sector aggregation | Weight and VaR share by sector. | core |
 
-## Factor model (`factors.py`)
+## Factor model (`models/factors.py`)
 
 | Method | What it does | Role |
 |---|---|---|
@@ -43,7 +43,7 @@ them. Each entry gives the method and its source, what it does, and its
 | Newey-West HAC standard errors (Newey & West 1987, 1994) | Coefficient covariance robust to heteroskedasticity and autocorrelation; Bartlett kernel with L = ⌊4(n/100)^{2/9}⌋ (statsmodels `cov_type="HAC"`, no small-sample correction). | diagnostic |
 | Variance decomposition | Var(r_p) = βₚᵀFβₚ + Σ w_i²σ²_ε,i, split by factor with the Euler allocation β_p,k(Fβ_p)_k. | core |
 
-## Volatility (`volatility.py`)
+## Volatility (`models/volatility.py`)
 
 | Method | What it does | Role |
 |---|---|---|
@@ -57,7 +57,7 @@ them. Each entry gives the method and its source, what it does, and its
 | Diebold-Mariano test (1995) | HAC t-test on the loss differential between two forecasters. | diagnostic |
 | Rolling out-of-sample refit | Refit on a trailing window every 21 days and forecast one day ahead. | diagnostic |
 
-## Covariance (`covariance.py`)
+## Covariance (`models/covariance.py`)
 
 | Method | What it does | Role |
 |---|---|---|
@@ -66,7 +66,7 @@ them. Each entry gives the method and its source, what it does, and its
 | Ledoit-Wolf shrinkage to scaled identity (2004) | Σ* = (1−δ)S + δμI with the analytic optimal δ (scikit-learn `LedoitWolf`); used for Monte Carlo and optimization. | core |
 | PSD repair | Clips negative eigenvalues before Cholesky. | diagnostic |
 
-## VaR, ES and simulation (`risk.py`)
+## VaR, ES and simulation (`models/risk.py`)
 
 | Method | What it does | Role |
 |---|---|---|
@@ -86,14 +86,14 @@ them. Each entry gives the method and its source, what it does, and its
 | t-copula with empirical marginals (Demarta & McNeil 2005) | Adds tail dependence: joint crashes are more likely. | core |
 | Euler component VaR (Litterman 1996; Tasche 2000) | VaR = Σ w_i ∂VaR/∂w_i; which holding drives risk, on the conditional (EWMA) covariance. | core |
 
-## Stress testing (`stress.py`)
+## Stress testing (`models/stress.py`)
 
 | Method | What it does | Role |
 |---|---|---|
 | Historical scenario replay | Today's weights applied to real returns over past crisis windows; assets without data are mapped through their factor betas. | core |
 | Factor-shock mapping | r_p = βₚ·f for hypothetical factor moves. Rate shocks map through MKT and VALUE using a 2022-calibrated transmission (−10% / +7% per +100bp). | core |
 
-## Backtesting (`backtest.py`)
+## Backtesting (`models/backtest.py`)
 
 | Method | What it does | Role |
 |---|---|---|
@@ -104,7 +104,7 @@ them. Each entry gives the method and its source, what it does, and its
 | Basel traffic light (BCBS 1996) | Green ≤ 4, yellow 5–9, red ≥ 10 breaches per 250 days at 99%, plus the same binomial zones over the full backtest. | diagnostic |
 | Acerbi-Székely ES test Z₂ (2014) | Tests whether losses beyond VaR match the forecast ES; one-sided bootstrap p-value. | core |
 
-## Allocation (`optimize.py`)
+## Allocation (`models/optimize.py`)
 
 | Method | What it does | Role |
 |---|---|---|

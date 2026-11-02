@@ -1,6 +1,6 @@
 """Offline demo on synthetic data.
 
-Builds a synthetic market with ``risklib.synthetic`` and runs the full report
+Builds a synthetic market with ``risklib.data.synthetic`` and runs the full report
 pipeline on it, so the project can be tried without network access. The
 numbers describe the synthetic market only. For a real portfolio run
 ``risklib report my_portfolio.yaml``, which downloads prices from yfinance.
@@ -13,9 +13,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from risklib import synthetic  # noqa: E402
-from risklib.data import save_prices_csv  # noqa: E402
-from risklib.report import run  # noqa: E402
+from risklib.data import synthetic  # noqa: E402
+from risklib.data.sources import save_prices_csv  # noqa: E402
+from risklib.pipeline import run  # noqa: E402
 
 args = [a for a in sys.argv[1:] if not a.startswith("--")]
 out = Path(args[0] if args else "reports_demo_synthetic")

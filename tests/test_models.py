@@ -8,10 +8,10 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from risklib import covariance as cv
-from risklib import factors as fm
-from risklib import synthetic
-from risklib import volatility as vol
+from risklib.data import synthetic
+from risklib.models import covariance as cv
+from risklib.models import factors as fm
+from risklib.models import volatility as vol
 
 
 # ---------------------------------------------------------------------------

@@ -23,7 +23,7 @@ import pandas as pd
 
 from sklearn.covariance import LedoitWolf
 
-from .data import TRADING_DAYS
+from .. import TRADING_DAYS
 
 
 def _frame(S: np.ndarray, cols) -> pd.DataFrame:

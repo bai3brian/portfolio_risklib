@@ -22,7 +22,7 @@ import numpy as np
 import pandas as pd
 from statsmodels.regression.linear_model import OLS
 
-from .data import TRADING_DAYS
+from .. import TRADING_DAYS
 
 # ticker or [long, short]
 FactorSpec = str | Sequence[str]

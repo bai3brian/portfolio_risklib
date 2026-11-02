@@ -7,7 +7,7 @@ max_sharpe        argmax (wᵀμ − r_f) / √(wᵀΣw)
 target_vol        max wᵀμ  s.t. √(wᵀΣw) ≤ σ*
 risk_parity       equal risk contribution (Spinu 2013 convex form)
 
-All take a DAILY covariance (any estimator from :mod:`risklib.covariance`)
+All take a DAILY covariance (any estimator from :mod:`risklib.models.covariance`)
 and return a weight Series. Constraints: Σw = 1, ``w_min ≤ w_i ≤ w_max``.
 
 :func:`walk_forward` re-estimates and re-optimizes on a rolling window and
@@ -28,8 +28,8 @@ import pandas as pd
 from scipy import optimize
 
 from . import covariance as cv
-from .data import TRADING_DAYS
-from .portfolio import performance_summary
+from .. import TRADING_DAYS
+from .performance import performance_summary
 
 ExpRet = Literal["mean", "shrunk", "zero"]
 

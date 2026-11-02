@@ -1,90 +1,19 @@
-"""Price data: download, validation, cleaning, alignment and returns.
+"""Price cleaning: validation, gap filling, proxy backfill, alignment and returns.
 
 Frames have a ``DatetimeIndex`` named ``"date"`` and one column per ticker
 (column index named ``"ticker"``). Docstrings state whether an input is
 prices or returns, and no function modifies its input in place.
-
-:func:`download_prices` is the only function in the library that uses the
-network (Yahoo Finance through ``yfinance``); :func:`load_prices_csv` reads
-any CSV with a ``date`` column and one numeric column per ticker.
 """
 
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from pathlib import Path
 from typing import Literal
 
 import numpy as np
 import pandas as pd
 
-TRADING_DAYS = 252
-
-
-# ---------------------------------------------------------------------------
-# Download / load
-# ---------------------------------------------------------------------------
-def download_prices(
-    tickers: Sequence[str],
-    start: str,
-    end: str | None = None,
-) -> pd.DataFrame:
-    """Download adjusted daily close PRICES from Yahoo Finance.
-
-    Parameters
-    ----------
-    tickers : sequence of str
-        Ticker symbols, e.g. ``["AAPL", "MSFT"]``.
-    start, end : str
-        ISO dates, e.g. ``"2015-01-01"``. ``end=None`` means today.
-
-    Returns
-    -------
-    pd.DataFrame
-        PRICES, one column per ticker in the order given. Adjusted for
-        splits and dividends (``auto_adjust=True``).
-
-    Notes
-    -----
-    Requires network access and the ``yfinance`` package. The import is lazy
-    so the rest of the library works offline.
-    """
-    import yfinance as yf  # imported lazily so the library works offline
-
-    tickers = list(dict.fromkeys(tickers))  # drop duplicates, keep order
-    raw = yf.download(
-        tickers, start=start, end=end, auto_adjust=True, progress=False
-    )
-    if raw is None or len(raw) == 0:
-        raise RuntimeError(
-            f"yfinance returned no data for {tickers} from {start} to {end}"
-        )
-    prices = raw["Close"]
-    if isinstance(prices, pd.Series):
-        prices = prices.to_frame(name=tickers[0])
-    missing = [t for t in tickers if t not in prices.columns]
-    if missing:
-        raise RuntimeError(f"yfinance returned no columns for: {missing}")
-    prices = prices[tickers].astype(float)
-    prices.index = pd.to_datetime(prices.index).tz_localize(None)
-    prices.index.name = "date"
-    prices.columns.name = "ticker"
-    return prices
-
-
-def save_prices_csv(prices: pd.DataFrame, path: str | Path) -> None:
-    """Save a PRICES frame to CSV (date index, one column per ticker)."""
-    prices.to_csv(path, index_label="date")
-
-
-def load_prices_csv(path: str | Path) -> pd.DataFrame:
-    """Load a PRICES frame from a CSV with a ``date`` column and one column per ticker."""
-    prices = pd.read_csv(path, index_col="date", parse_dates=True)
-    prices = prices.astype(float)
-    prices.index = pd.to_datetime(prices.index)
-    prices.index.name = "date"
-    prices.columns.name = "ticker"
-    return prices
+from .. import TRADING_DAYS
 
 
 # ---------------------------------------------------------------------------
@@ -278,7 +207,7 @@ def coverage_summary(prices: pd.DataFrame) -> pd.DataFrame:
 
 
 # ---------------------------------------------------------------------------
-# Pipeline
+# Full cleaning pipeline
 # ---------------------------------------------------------------------------
 def build_panel(
     prices: pd.DataFrame,
@@ -316,5 +245,27 @@ def load_panel(
     **kwargs,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Download PRICES and run :func:`build_panel` on them (network)."""
+    from ..data.sources import download_prices
+
     raw = download_prices(tickers, start=start, end=end)
     return build_panel(raw, **kwargs)
+
+
+def stress_panel(cfg: dict, raw_prices: pd.DataFrame) -> tuple[pd.DataFrame, dict[str, pd.Timestamp]]:
+    """Long-history holding prices for stress replays, proxy-backfilled where configured.
+
+    Returns the price panel and each backfilled holding's first real date.
+    """
+    holdings = cfg["holdings"]
+    full = fill_gaps(raw_prices[list(holdings)].sort_index(), cfg["panel"]["max_gap"])
+    real_from: dict[str, pd.Timestamp] = {}
+    for t, spec in holdings.items():
+        p = spec.get("proxy") if isinstance(spec, Mapping) else None
+        if p and p in raw_prices.columns:
+            try:
+                full, first = backfill_with_proxy(full, t, raw_prices[p].sort_index().ffill(limit=cfg["panel"]["max_gap"]))
+            except ValueError:
+                continue
+            if first is not None:
+                real_from[t] = first
+    return full, real_from
