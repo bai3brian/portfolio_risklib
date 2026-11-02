@@ -156,15 +156,14 @@ def test_sample_cov_matches_pandas():
     np.testing.assert_allclose(cv.sample_cov(R).values, R.cov().values)
 
 
-def test_ledoit_wolf_matches_sklearn():
-    from sklearn.covariance import LedoitWolf
-
+def test_ledoit_wolf_is_shrunk_sample_covariance():
     R = make_returns(n=300, k=8)
     S, shrink = cv.ledoit_wolf(R)
-    sk = LedoitWolf(assume_centered=False).fit(R.values)
-    assert shrink == pytest.approx(sk.shrinkage_, rel=1e-6)
-    n = len(R)
-    np.testing.assert_allclose(S.values, sk.covariance_ * n / (n - 1), rtol=1e-8)
+    n, p = R.shape
+    S_mle = cv.sample_cov(R).values * (n - 1) / n
+    target = np.trace(S_mle) / p * np.eye(p)
+    assert 0.0 < shrink < 1.0
+    np.testing.assert_allclose(S.values, ((1 - shrink) * S_mle + shrink * target) * n / (n - 1), rtol=1e-8)
 
 
 def test_ewma_cov_psd_and_shape():
@@ -229,13 +228,3 @@ def test_gjr_does_not_stall_at_starting_values():
     m2 = vol.GJRGARCH().fit(pd.Series(r2))
     assert m2.params["gamma"] > 2 * m2.params["alpha"]  # true γ/α = 2.5
     assert abs(m2.params["gamma"] - m2.params["alpha"]) > 0.02
-
-def test_garch_recursion_matches_loop():
-    rng = np.random.default_rng(0)
-    e = rng.standard_normal(300) * 0.01
-    got = vol._garch_recursion(e, 2e-6, 0.05, 0.9, 0.08, 1e-4)
-    s2 = np.empty(300)
-    s2[0] = 1e-4
-    for t in range(1, 300):
-        s2[t] = 2e-6 + (0.05 + (0.08 if e[t - 1] < 0 else 0)) * e[t - 1] ** 2 + 0.9 * s2[t - 1]
-    np.testing.assert_allclose(got, s2, rtol=1e-12)

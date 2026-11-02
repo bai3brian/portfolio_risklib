@@ -18,12 +18,12 @@ pipeline never uses it.
 cd risklib
 python -m venv .venv && source .venv/bin/activate     # Windows: .venv\Scripts\activate
 pip install -e ".[dev]"
-pytest -q                                             # 116 tests, no network needed
+pytest -q                                             # 115 tests, no network needed
 ```
 
-Requirements: Python ≥ 3.10, numpy, pandas ≥ 2.2, scipy, matplotlib, PyYAML,
-yfinance. Optional: a LaTeX engine for the PDF report, and `arch` for
-`volatility.crosscheck_arch`. Installing the package adds a `risklib`
+Requirements: Python ≥ 3.10, numpy, pandas ≥ 2.2, scipy, statsmodels, arch,
+scikit-learn, matplotlib, PyYAML and yfinance, all installed by the command
+above. Optional: a LaTeX engine for the PDF report. Installing the package adds a `risklib`
 command; `python -m risklib` is equivalent.
 
 ## 2. Run the report on your portfolio

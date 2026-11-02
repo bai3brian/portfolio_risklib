@@ -39,8 +39,8 @@ them. Each entry gives the method and its source, what it does, and its
 | Method | What it does | Role |
 |---|---|---|
 | Linear multi-factor model (Sharpe 1964; Fama & French 1993; Carhart 1997; BARRA-style sector factor) | r_i = α_i + Σ_k β_ik f_k + ε_i with ETF factors: SPY, IWM−SPY, IWD−IWF, MTUM−SPY, SMH−SPY. Proxied holdings are estimated on real days only. | core |
-| Ordinary least squares | Closed-form (XᵀX)⁻¹Xᵀy beta estimates. | core |
-| Newey-West HAC standard errors (Newey & West 1987, 1994) | Coefficient covariance robust to heteroskedasticity and autocorrelation; Bartlett kernel with L = ⌊4(n/100)^{2/9}⌋. | diagnostic |
+| Ordinary least squares | Closed-form (XᵀX)⁻¹Xᵀy beta estimates (statsmodels `OLS`). | core |
+| Newey-West HAC standard errors (Newey & West 1987, 1994) | Coefficient covariance robust to heteroskedasticity and autocorrelation; Bartlett kernel with L = ⌊4(n/100)^{2/9}⌋ (statsmodels `cov_type="HAC"`, no small-sample correction). | diagnostic |
 | Variance decomposition | Var(r_p) = βₚᵀFβₚ + Σ w_i²σ²_ε,i, split by factor with the Euler allocation β_p,k(Fβ_p)_k. | core |
 
 ## Volatility (`volatility.py`)
@@ -51,8 +51,8 @@ them. Each entry gives the method and its source, what it does, and its
 | GARCH(1,1) (Engle 1982; Bollerslev 1986) | σ²_t = ω + αε²_{t−1} + βσ²_{t−1}: mean-reverting volatility clustering; supplies the σ forecast for FHS and the GARCH backtests. | core |
 | GJR-GARCH (Glosten, Jagannathan & Runkle 1993) | Adds γ·1[ε<0]ε², the leverage effect; one of the forecasters in the out-of-sample comparison. | benchmark |
 | Student-t GARCH (Bollerslev 1987) | Same recursion with standardized-t innovations; separates fat tails from clustering (backtest model `garch_t`). | optional |
-| Maximum likelihood | Parameters chosen to maximize the normal or t log-likelihood, optimized over scaled parameters with SLSQP (stationarity constraint) from a grid of starts, then polished by Nelder-Mead. | core |
-| Numerical-Hessian standard errors | Inverse finite-difference Hessian, mapped back by the delta method. Under misspecification these are not the robust QMLE errors. | diagnostic |
+| Maximum likelihood | Parameters chosen to maximize the normal or standardized-t log-likelihood, fitted with the `arch` package on percent returns and converted back to return units. | core |
+| Robust (QMLE) standard errors (Bollerslev & Wooldridge 1992) | arch's default sandwich covariance, valid when the innovation distribution is misspecified. | diagnostic |
 | QLIKE and MSE loss (Patton 2011) | Score variance forecasts against squared returns; QLIKE is robust to the noisy proxy. | diagnostic |
 | Diebold-Mariano test (1995) | HAC t-test on the loss differential between two forecasters. | diagnostic |
 | Rolling out-of-sample refit | Refit on a trailing window every 21 days and forecast one day ahead. | diagnostic |
@@ -62,8 +62,8 @@ them. Each entry gives the method and its source, what it does, and its
 | Method | What it does | Role |
 |---|---|---|
 | Sample covariance | Unbiased estimator; baseline. | core |
-| EWMA covariance | RiskMetrics recursion on outer products; used for conditional component VaR. | core |
-| Ledoit-Wolf shrinkage to scaled identity (2004) | Σ* = (1−δ)S + δμI with the analytic optimal δ; used for Monte Carlo and optimization. | core |
+| EWMA covariance | RiskMetrics recursion on outer products (pandas `ewm`); used for conditional component VaR. | core |
+| Ledoit-Wolf shrinkage to scaled identity (2004) | Σ* = (1−δ)S + δμI with the analytic optimal δ (scikit-learn `LedoitWolf`); used for Monte Carlo and optimization. | core |
 | PSD repair | Clips negative eigenvalues before Cholesky. | diagnostic |
 
 ## VaR, ES and simulation (`risk.py`)

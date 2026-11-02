@@ -1,6 +1,6 @@
 # Risk report: Synthetic demo portfolio
 
-Generated 2026-11-01 23:50. Data: 2019-01-01 → 2026-09-22 (2016 trading days, 6 holdings). Value 100,000 (config override). Source: `csv`.
+Generated 2026-11-02 01:18. Data: 2019-01-01 → 2026-09-22 (2016 trading days, 6 holdings). Value 100,000 (config override). Source: `csv`.
 
 ## 1. Portfolio
 
@@ -89,8 +89,8 @@ GARCH(1,1) conditional volatility is **16.9%** annualized against a long-run lev
 | model | qlike | mse | dm_vs_EWMA(0.94) | dm_pvalue |
 |---|---|---|---|---|
 | EWMA(0.94) | 1.362 | 6.791e-08 |  |  |
-| GARCH(1,1) | 1.364 | 6.793e-08 | 0.3299 | 0.7414 |
-| GJR-GARCH | 1.367 | 6.815e-08 | 0.5587 | 0.5764 |
+| GARCH(1,1) | 1.366 | 6.799e-08 | 0.4833 | 0.6289 |
+| GJR-GARCH | 1.367 | 6.818e-08 | 0.6179 | 0.5367 |
 
 Lower QLIKE is a better variance forecast; `dm_pvalue` < 0.05 means the difference from the first model is statistically significant (Diebold-Mariano).
 
@@ -103,19 +103,19 @@ Lower QLIKE is a better variance forecast; `dm_pvalue` < 0.05 means the differen
 |---|---|---|---|---|---|---|---|---|---|---|
 | Parametric normal | 1 | 0.9900 | 0.0297 | 0.0340 |  |  |  |  | 2971.6018 | 3404.4588 |
 | Historical | 1 | 0.9900 | 0.0309 | 0.0353 | 0.0283 | 0.0330 | 0.0324 | 0.0376 | 3092.4950 | 3531.7916 |
-| Filtered historical (GARCH) | 1 | 0.9900 | 0.0245 | 0.0284 | 0.0227 | 0.0270 | 0.0262 | 0.0307 | 2445.8190 | 2837.0207 |
+| Filtered historical (GARCH) | 1 | 0.9900 | 0.0245 | 0.0282 | 0.0227 | 0.0268 | 0.0261 | 0.0302 | 2449.4392 | 2818.7157 |
 | MC t-copula + empirical | 1 | 0.9900 | 0.0307 | 0.0350 |  |  |  |  | 3072.4055 | 3499.8635 |
 | Parametric normal | 1 | 0.9750 | 0.0250 | 0.0299 |  |  |  |  | 2503.5949 | 2986.2340 |
 | Historical | 1 | 0.9750 | 0.0256 | 0.0308 | 0.0235 | 0.0272 | 0.0289 | 0.0325 | 2556.1240 | 3078.1479 |
-| Filtered historical (GARCH) | 1 | 0.9750 | 0.0211 | 0.0247 | 0.0198 | 0.0224 | 0.0235 | 0.0265 | 2108.5702 | 2474.1640 |
+| Filtered historical (GARCH) | 1 | 0.9750 | 0.0211 | 0.0247 | 0.0199 | 0.0225 | 0.0234 | 0.0263 | 2111.3822 | 2468.3413 |
 | MC t-copula + empirical | 1 | 0.9750 | 0.0245 | 0.0304 |  |  |  |  | 2453.1003 | 3039.8881 |
 | Parametric normal | 10 | 0.9900 | 0.0940 | 0.1077 |  |  |  |  | 9397.0301 | 10765.8440 |
 | Historical (√10-scaled from 1-day) | 10 | 0.9900 | 0.0978 | 0.1117 |  |  |  |  | 9779.3278 | 11168.5057 |
-| Filtered historical (GARCH) | 10 | 0.9900 | 0.0842 | 0.0990 |  |  |  |  | 8418.4507 | 9897.2469 |
+| Filtered historical (GARCH) | 10 | 0.9900 | 0.0843 | 0.0985 |  |  |  |  | 8425.1252 | 9852.3453 |
 | MC t-copula + empirical | 10 | 0.9900 | 0.0888 | 0.0999 |  |  |  |  | 8882.4323 | 9987.0700 |
 | Parametric normal | 10 | 0.9750 | 0.0792 | 0.0944 |  |  |  |  | 7917.0621 | 9443.3010 |
 | Historical (√10-scaled from 1-day) | 10 | 0.9750 | 0.0808 | 0.0973 |  |  |  |  | 8083.1740 | 9733.9585 |
-| Filtered historical (GARCH) | 10 | 0.9750 | 0.0715 | 0.0858 |  |  |  |  | 7147.6539 | 8579.8636 |
+| Filtered historical (GARCH) | 10 | 0.9750 | 0.0714 | 0.0855 |  |  |  |  | 7137.7844 | 8553.3947 |
 | MC t-copula + empirical | 10 | 0.9750 | 0.0755 | 0.0887 |  |  |  |  | 7547.5025 | 8868.9741 |
 
 ### Component VaR 99% 1-day (Euler, EWMA(0.94) conditional covariance)
@@ -161,8 +161,8 @@ Rate shocks are mapped through equities the way 2022 transmitted them (per +100b
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | normal | 1516 | 23 | 15.1600 | 1.5172 | 0.0601 | 0.3592 | 0.1121 | red | yellow | 0.5858 | 0.0210 | 2.8915 | 4.3030 |
 | historical | 1516 | 21 | 15.1600 | 1.3852 | 0.1543 | 0.2943 | 0.2092 | yellow | green | 0.4344 | 0.0545 | 2.9208 | 4.3030 |
-| garch_normal | 1516 | 17 | 15.1600 | 1.1214 | 0.6413 | 0.1828 | 0.3694 | green | green | 0.1317 | 0.3000 | 2.9667 | 4.3030 |
-| fhs | 1516 | 19 | 15.1600 | 1.2533 | 0.3403 | 0.2353 | 0.3139 | green | green | 0.2671 | 0.1460 | 3.0028 | 4.3030 |
+| garch_normal | 1516 | 17 | 15.1600 | 1.1214 | 0.6413 | 0.1828 | 0.3694 | green | green | 0.1254 | 0.3125 | 3.0060 | 4.3030 |
+| fhs | 1516 | 20 | 15.1600 | 1.3193 | 0.2337 | 0.2640 | 0.2637 | green | green | 0.3224 | 0.1095 | 3.0308 | 4.3030 |
 
 Best model by coverage among those passing conditional coverage: **garch_normal**. `garch_normal` uses a normal quantile on a GARCH σ, so comparing it with `fhs` (same σ, empirical tails) isolates the tail assumption. Models are set by `backtest.methods`. `es_Z2` > 0 means realized losses beyond VaR exceeded ES; `es_p` is the one-sided bootstrap probability. `traffic_light_250d` is the Basel zone on the last 250 days only; `traffic_light_full` applies the same binomial thresholds to the whole backtest.
 

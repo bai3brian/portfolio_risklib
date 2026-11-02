@@ -7,9 +7,9 @@ scale by 252.
 Estimators
 ----------
 sample_cov          unbiased sample covariance.
-ewma_cov            RiskMetrics exponentially weighted covariance (λ=0.94).
-ledoit_wolf         Ledoit-Wolf (2004) shrinkage toward a scaled identity;
-                    matches sklearn.covariance.LedoitWolf.
+ewma_cov            RiskMetrics exponentially weighted covariance (λ=0.94), via pandas.
+ledoit_wolf         Ledoit-Wolf (2004) shrinkage toward a scaled identity, via
+                    sklearn.covariance.LedoitWolf.
 
 Helpers
 -------
@@ -20,6 +20,8 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+
+from sklearn.covariance import LedoitWolf
 
 from .data import TRADING_DAYS
 
@@ -42,44 +44,35 @@ def sample_cov(returns: pd.DataFrame) -> pd.DataFrame:
 
 
 def ewma_cov(returns: pd.DataFrame, lam: float = 0.94) -> pd.DataFrame:
-    """RiskMetrics EWMA covariance:  Σ_t = λ Σ_{t-1} + (1-λ) r_{t-1} r_{t-1}ᵀ.
+    """RiskMetrics EWMA covariance:  Σ_t = λ Σ_{t-1} + (1-λ) r_t r_tᵀ, seeded with the sample covariance.
 
-    Returns the estimate as of the day *after* the last observation.
+    Returns the estimate as of the day *after* the last observation. Returns
+    are demeaned by their sample mean; the recursion runs through pandas'
+    exponentially weighted mean on the cross-products.
     """
     r = returns.dropna()
     e = r.values - r.values.mean(axis=0)
-    S = np.cov(e, rowvar=False, ddof=1)
-    for t in range(len(e)):
-        S = lam * S + (1.0 - lam) * np.outer(e[t], e[t])
-    return _frame(S, r.columns)
+    k = e.shape[1]
+    cross = np.einsum("ti,tj->tij", e, e).reshape(len(e), k * k)
+    seeded = np.vstack([np.cov(e, rowvar=False, ddof=1).reshape(1, k * k), cross])
+    last = pd.DataFrame(seeded).ewm(alpha=1.0 - lam, adjust=False).mean().iloc[-1].values
+    return _frame(last.reshape(k, k), r.columns)
 
 
 def ledoit_wolf(returns: pd.DataFrame) -> tuple[pd.DataFrame, float]:
-    """Ledoit-Wolf (2004) shrinkage toward μI, with analytic shrinkage δ*.
+    """Ledoit-Wolf (2004) shrinkage toward μI with the analytic optimal δ (scikit-learn).
 
-    Σ_shrunk = (1-δ) S + δ μ I,  μ = tr(S)/p.
+    Σ_shrunk = (1-δ) S + δ μ I,  μ = tr(S)/p, rescaled from the maximum-likelihood
+    to the unbiased (n-1) convention used by :func:`sample_cov`.
 
     Returns
     -------
     (cov, shrinkage)
     """
     r = returns.dropna()
-    X = r.values - r.values.mean(axis=0)
-    n, p = X.shape
-    S = X.T @ X / n
-    mu = np.trace(S) / p
-    delta = np.sum((S - mu * np.eye(p)) ** 2)
-    # β̄ = (1/n²) Σ_t ||x_t x_tᵀ − S||²_F
-    beta_bar = 0.0
-    for t in range(n):
-        xx = np.outer(X[t], X[t])
-        beta_bar += np.sum((xx - S) ** 2)
-    beta_bar /= n**2
-    shrink = float(np.clip(beta_bar / delta, 0.0, 1.0)) if delta > 0 else 1.0
-    S_shrunk = (1.0 - shrink) * S + shrink * mu * np.eye(p)
-    # rescale to the unbiased convention used by sample_cov
-    S_shrunk *= n / (n - 1)
-    return _frame(S_shrunk, r.columns), shrink
+    n = len(r)
+    lw = LedoitWolf(assume_centered=False).fit(r.values)
+    return _frame(lw.covariance_ * n / (n - 1), r.columns), float(lw.shrinkage_)
 
 
 # ---------------------------------------------------------------------------

@@ -15,8 +15,8 @@
       "top5_weight": 0.8898114705833006,
       "hhi_risk": 0.17666463802714272,
       "effective_n_risk": 5.660442356587288,
-      "top1_risk": 0.23377132476448767,
-      "top5_risk": 0.8721680714907927
+      "top1_risk": 0.23377132476448764,
+      "top5_risk": 0.8721680714907928
     },
     "sectors_weight_%": {
       "Technology": 36.07,
@@ -73,7 +73,7 @@
     "calmar": -0.0655322048297427
   },
   "factor": {
-    "portfolio_r2": 0.8585479903763771,
+    "portfolio_r2": 0.8585479903763773,
     "exposures": {
       "MKT": 1.142,
       "SIZE": -0.006,
@@ -83,21 +83,21 @@
     "n_assets_on_real_data_only": 6
   },
   "volatility": {
-    "garch_current_vol_ann": 0.16853507035203677,
-    "garch_long_run_vol_ann": 0.202482383042063,
-    "garch_persistence": 0.9750575604242337,
-    "garch_half_life_days": 27.44183851444924,
+    "garch_current_vol_ann": 0.16854611064893885,
+    "garch_long_run_vol_ann": 0.20176656040956525,
+    "garch_persistence": 0.9747019314715393,
+    "garch_half_life_days": 27.051159843233005,
     "oos_qlike": {
       "EWMA(0.94)": 1.3619,
-      "GARCH(1,1)": 1.3644,
-      "GJR-GARCH": 1.3666
+      "GARCH(1,1)": 1.3656,
+      "GJR-GARCH": 1.3673
     },
     "best_oos_model": "EWMA(0.94)",
     "qlike_improvement_vs_EWMA(0.94)_%": 0.0,
     "dm_pvalue_best": null
   },
   "covariance": {
-    "ledoit_wolf_shrinkage": 0.0033705238936017293,
+    "ledoit_wolf_shrinkage": 0.003370523893601724,
     "attribution_cov": "EWMA(0.94) conditional"
   },
   "var": {
@@ -108,16 +108,16 @@
       0.02827904427207084,
       0.03298246823018384
     ],
-    "fhs_1d": 0.024458190494119913,
+    "fhs_1d": 0.024494391657948672,
     "fhs_1d_ci": [
-      0.022685503968078755,
-      0.02700470017214305
+      0.02271265565907579,
+      0.026810661799460195
     ],
-    "fhs_1d_es": 0.0283702071857407,
+    "fhs_1d_es": 0.0281871566040891,
     "mc_t_copula_1d": 0.030724055072511497,
-    "fhs_10d": 0.08418450719741948,
+    "fhs_10d": 0.08425125178103236,
     "top_risk_contributor": "SYN03",
-    "top_contributor_pct_of_var": 23.377132476448768,
+    "top_contributor_pct_of_var": 23.377132476448764,
     "top_contributor_weight_pct": 24.442514355411245,
     "diversification_benefit_pct_of_standalone": 31.211995411127337
   },
@@ -142,8 +142,8 @@
     "best_christoffersen_p": 0.18280794585892463,
     "best_cc_p": 0.36940837122033027,
     "best_traffic_light_full": "green",
-    "best_es_Z2": 0.1317245138532348,
-    "best_es_p": 0.3,
+    "best_es_Z2": 0.12535000389382356,
+    "best_es_p": 0.3125,
     "n_models_passing_cc": 4,
     "n_models": 4,
     "normal_breach_rate_%": 1.517150395778364,
@@ -169,20 +169,20 @@
         "avg_turnover": 0.02280052778801775
       },
       "ledoit_wolf/min_variance": {
-        "ann_return": -0.09817983599358215,
-        "ann_vol": 0.1989943667399361,
-        "sharpe": -0.41971862763544093,
-        "max_drawdown": -0.6489612824737676,
-        "calmar": -0.15128766329376636,
-        "avg_turnover": 0.16299732685293888
+        "ann_return": -0.09817983565720934,
+        "ann_vol": 0.19899436666256357,
+        "sharpe": -0.4197186260037113,
+        "max_drawdown": -0.6489612816273335,
+        "calmar": -0.1512876629727645,
+        "avg_turnover": 0.16299732175970727
       },
       "ledoit_wolf/risk_parity": {
-        "ann_return": -0.08567626317810961,
-        "ann_vol": 0.20192374508601035,
-        "sharpe": -0.3425605934789472,
-        "max_drawdown": -0.6473587105921623,
-        "calmar": -0.13234743238372193,
-        "avg_turnover": 0.022639408442163254
+        "ann_return": -0.08567618099225505,
+        "ann_vol": 0.20192375011805377,
+        "sharpe": -0.34256013485100184,
+        "max_drawdown": -0.6473587446355399,
+        "calmar": -0.1323472984681629,
+        "avg_turnover": 0.022638898103984447
       },
       "equal_weight": {
         "ann_return": -0.083135524722872,
@@ -201,17 +201,17 @@
         "avg_turnover": 0.0
       }
     },
-    "lw_vs_sample_minvar_vol_reduction_%": -0.008352270055622668,
+    "lw_vs_sample_minvar_vol_reduction_%": -0.008352231170594138,
     "risk_parity_vs_current": {
       "sharpe": [
-        -0.3425605934789472,
+        -0.34256013485100184,
         -0.2101626520546012
       ],
       "ann_vol": [
-        0.20192374508601035,
+        0.20192375011805377,
         0.20460282984149575
       ],
-      "turnover": 0.022639408442163254
+      "turnover": 0.022638898103984447
     }
   }
 }

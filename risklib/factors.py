@@ -2,7 +2,7 @@
 
 Factors are built from ETF proxies (long or long-minus-short), then each
 asset's RETURNS are regressed on the factor RETURNS by OLS with Newey-West
-(HAC) standard errors. The fitted model gives:
+(HAC) standard errors, using statsmodels. The fitted model gives:
 
 * betas, t-stats and R² per asset;
 * the split of the portfolio's variance into per-factor systematic parts and
@@ -20,7 +20,7 @@ from dataclasses import dataclass
 
 import numpy as np
 import pandas as pd
-from scipy import stats
+from statsmodels.regression.linear_model import OLS
 
 from .data import TRADING_DAYS
 
@@ -97,7 +97,7 @@ def newey_west_lags(n: int) -> int:
 def ols_hac(
     y: np.ndarray, X: np.ndarray, lags: int | None = None, add_const: bool = True
 ) -> dict:
-    """OLS with Newey-West heteroskedasticity/autocorrelation-consistent SEs.
+    """OLS with Newey-West heteroskedasticity/autocorrelation-consistent SEs (statsmodels).
 
     Parameters
     ----------
@@ -120,34 +120,13 @@ def ols_hac(
     n = len(y)
     if add_const:
         X = np.column_stack([np.ones(n), X])
-    k = X.shape[1]
     if lags is None:
         lags = newey_west_lags(n)
-
-    XtX_inv = np.linalg.pinv(X.T @ X)
-    coef = XtX_inv @ X.T @ y
-    resid = y - X @ coef
-
-    # HAC "meat": S = Γ0 + Σ_l w_l (Γ_l + Γ_lᵀ),  w_l = 1 - l/(L+1)
-    u = X * resid[:, None]
-    S = u.T @ u
-    for lag in range(1, lags + 1):
-        w = 1.0 - lag / (lags + 1.0)
-        gamma = u[lag:].T @ u[:-lag]
-        S += w * (gamma + gamma.T)
-    cov = XtX_inv @ S @ XtX_inv
-    se = np.sqrt(np.clip(np.diag(cov), 0.0, None))
-    with np.errstate(divide="ignore", invalid="ignore"):
-        tstat = np.where(se > 0, coef / se, np.nan)
-    pvalue = 2.0 * stats.t.sf(np.abs(tstat), df=max(n - k, 1))
-
-    ss_res = float(resid @ resid)
-    ss_tot = float(((y - y.mean()) ** 2).sum())
-    r2 = 1.0 - ss_res / ss_tot if ss_tot > 0 else np.nan
-    r2_adj = 1.0 - (1.0 - r2) * (n - 1) / max(n - k, 1)
+    # Bartlett-kernel HAC covariance without the small-sample correction; t-based p-values
+    res = OLS(y, X).fit(cov_type="HAC", cov_kwds={"maxlags": lags, "use_correction": False}, use_t=True)
     return dict(
-        coef=coef, se=se, tstat=tstat, pvalue=pvalue, r2=r2, r2_adj=r2_adj,
-        resid=resid, lags=lags, cov=cov,
+        coef=np.asarray(res.params), se=np.asarray(res.bse), tstat=np.asarray(res.tvalues), pvalue=np.asarray(res.pvalues),
+        r2=float(res.rsquared), r2_adj=float(res.rsquared_adj), resid=np.asarray(res.resid), lags=lags, cov=np.asarray(res.cov_params()),
     )
 
 

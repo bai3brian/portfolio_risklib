@@ -11,14 +11,15 @@ tests, out-of-sample backtests and an allocation reference. The results come
 out as one Markdown report, with an optional PDF whose first page is a
 portfolio-health snapshot.
 
-Every model is implemented from first principles in numpy/scipy, including
-the GARCH likelihoods, Ledoit-Wolf shrinkage, the copula simulators and the
-backtest statistics. The test suite checks each one against data simulated
-from known parameters.
+Estimation runs on the standard scientific Python stack: statsmodels for the
+factor regressions and Newey-West errors, arch for the GARCH family,
+scikit-learn for Ledoit-Wolf shrinkage, pandas for EWMA, and numpy/scipy for
+the Monte Carlo engines, VaR methods and backtest statistics. The test suite
+checks each model against data simulated from known parameters.
 
 ```bash
 pip install -e ".[dev]"
-pytest                                          # 116 tests, no network needed
+pytest                                          # 115 tests, no network needed
 cp examples/portfolio.yaml my_portfolio.yaml    # edit the holdings
 risklib report my_portfolio.yaml --pdf          # writes reports/report.md and report.pdf
 ```
@@ -35,9 +36,9 @@ in [`examples/sample_report/`](examples/sample_report/)
 |---|---|
 | Data | adjusted prices from yfinance or CSV, capped forward-fill, common-window alignment, proxy backfill for recent IPOs and spin-offs |
 | Portfolio | daily-rebalanced and buy-and-hold returns, CAGR, volatility, Sharpe, Sortino, drawdown, Calmar, trailing windows, Herfindahl / effective number of positions by weight and by risk, sector aggregation |
-| Factor model | ETF long-short factors (market, size, value, momentum, semiconductors), OLS with Newey-West HAC errors, variance decomposition |
-| Volatility | EWMA (RiskMetrics), GARCH(1,1), GJR-GARCH and Student-t GARCH by maximum likelihood; rolling out-of-sample comparison with QLIKE and Diebold-Mariano |
-| Covariance | sample, EWMA, Ledoit-Wolf shrinkage; PSD repair |
+| Factor model | ETF long-short factors (market, size, value, momentum, semiconductors), OLS with Newey-West HAC errors (statsmodels), variance decomposition |
+| Volatility | EWMA (RiskMetrics, pandas), GARCH(1,1), GJR-GARCH and Student-t GARCH by maximum likelihood (arch); rolling out-of-sample comparison with QLIKE and Diebold-Mariano |
+| Covariance | sample, EWMA (pandas), Ledoit-Wolf shrinkage (scikit-learn); PSD repair |
 | VaR / ES | parametric normal and Student-t, historical and age-weighted historical, filtered historical simulation, Monte Carlo (normal, Student-t, Gaussian and t copulas with empirical marginals), bootstrap confidence intervals |
 | Attribution | Euler component VaR, marginal and standalone VaR, diversification benefit |
 | Stress | historical crisis replay at today's weights, hypothetical factor shocks (rate shocks calibrated to 2022); 19 crises from 2000 to 2025 |
@@ -68,6 +69,25 @@ tests/            pytest suite (synthetic data only)
 examples/         example config, offline demo, sample output
 docs/             user guide, model catalogue, further reading
 ```
+
+## Dependencies
+
+All are installed by `pip install -e ".[dev]"` (see `pyproject.toml`).
+
+| Package | Used in | What it does there |
+|---|---|---|
+| numpy | every module | Array math and linear algebra (Cholesky and eigendecompositions for the Monte Carlo engines), random numbers for Monte Carlo, FHS and bootstrap intervals, empirical quantiles for historical VaR/ES |
+| pandas | every module | Price and return frames, date alignment, rolling windows, CSV input/output; `ewm` computes the EWMA volatility (`volatility.py`) and EWMA covariance (`covariance.py`) |
+| scipy | `risk.py`, `backtest.py`, `volatility.py`, `optimize.py` | `scipy.stats`: normal and Student-t quantiles, densities and fits for parametric VaR/ES, the copula simulations and the t-based backtest models; χ² and binomial distributions for the Kupiec, Christoffersen and Basel traffic-light tests; the normal p-value of the Diebold-Mariano test. `scipy.optimize.minimize`: SLSQP for the long-only optimizers, L-BFGS-B for risk parity |
+| statsmodels | `factors.py` | `OLS` with `cov_type="HAC"`: factor betas, R² and Newey-West standard errors |
+| arch | `volatility.py` (and through it FHS in `risk.py` and the GARCH backtests in `backtest.py`) | `arch_model`: maximum-likelihood fits of GARCH(1,1), GJR-GARCH and Student-t GARCH with robust standard errors; `fix` to roll fitted parameters forward on new data; analytic variance forecasts |
+| scikit-learn | `covariance.py` | `LedoitWolf`: shrinkage covariance used by the Monte Carlo VaR and the walk-forward optimizers |
+| matplotlib | `report.py` | The report charts: conditional volatility, component VaR, stress scenarios, VaR backtest, walk-forward |
+| PyYAML | `portfolio.py` | Reads the portfolio config (`my_portfolio.yaml`) |
+| yfinance | `data.py`, `report.py` | Downloads adjusted daily prices from Yahoo Finance; looks up missing sector labels |
+| pytest, ruff | `tests/` (development only) | Test suite and linting |
+
+The PDF report (`pdfreport.py`) also needs a LaTeX engine, `pdflatex` or `latexmk` from MiKTeX, MacTeX or TeX Live. It is a system program, not a Python package; without it the report is still written as Markdown and `report.tex`.
 
 ## Command line
 

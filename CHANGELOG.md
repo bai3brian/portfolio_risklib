@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.7.0
+Estimators moved onto standard packages; numbers for the deterministic models
+are unchanged to machine precision.
+- Factor regressions: statsmodels `OLS` with `cov_type="HAC"` (Bartlett kernel,
+  same lag rule, no small-sample correction) replaces the hand-written OLS and
+  Newey-West code.
+- GARCH, GJR-GARCH and Student-t GARCH: fitted with `arch` (on percent returns,
+  converted back). Parameter estimates, robust standard errors and forecasts
+  come from arch, so GARCH-based figures (FHS VaR, GARCH backtests,
+  conditional volatility) move slightly; arch typically reaches a higher
+  likelihood than the previous optimizer. Rolling forecasts reuse fitted
+  parameters through arch's `fix`.
+- Ledoit-Wolf shrinkage: scikit-learn `LedoitWolf`.
+- EWMA volatility and covariance: pandas `ewm`.
+- New dependencies: statsmodels, arch, scikit-learn. Removed:
+  `volatility.crosscheck_arch` and the hand-written likelihood, recursion and
+  Hessian code.
+
 ## 0.6.0
 Decluttered report: seven sections plus the appendix (was eight), 8-page PDF
 (was 10), roughly a third of the run time.
