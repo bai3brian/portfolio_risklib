@@ -1,0 +1,107 @@
+# Example risklib config. Copy it to my_portfolio.yaml (git-ignored), edit the
+# holdings and run:
+#     risklib report my_portfolio.yaml
+#
+# Every key except `holdings` is optional; defaults are in risklib/report.py
+# (DEFAULTS) and documented in docs/USER_GUIDE.md.
+
+name: "Example portfolio"
+start: "2015-01-01"        # start of the estimation window (stress replays download further back on their own)
+end: null                  # null = today
+portfolio_value: 100000    # needed for dollar figures when holdings are weights
+rf_annual: 0.04            # risk-free rate for Sharpe
+
+# Each holding is one of {shares: N}, {dollars: N}, {weight: N}, or a bare number (dollars).
+# Shares are valued at the last close; weights are normalized to sum to 1.
+# `sector:` is optional free text; without it the sector is looked up on yfinance.
+# A holding with a short history may carry `proxy: TICKER`: before its first real
+# price, its returns are backfilled with the proxy's (e.g. a spin-off's former parent).
+holdings:
+  AAPL:  {weight: 9, sector: Technology}
+  MSFT:  {weight: 9, sector: Technology}
+  NVDA:  {weight: 8, sector: Technology}
+  GOOGL: {weight: 7, sector: Communication Services}
+  AMZN:  {weight: 7, sector: Consumer Discretionary}
+  JPM:   {weight: 7, sector: Financials}
+  V:     {weight: 6, sector: Financials}
+  UNH:   {weight: 5, sector: Healthcare}
+  LLY:   {weight: 5, sector: Healthcare}
+  PG:    {weight: 5, sector: Consumer Staples}
+  COST:  {weight: 5, sector: Consumer Staples}
+  XOM:   {weight: 5, sector: Energy}
+  CAT:   {weight: 5, sector: Industrials}
+  CEG:   {weight: 4, sector: Utilities, proxy: EXC}   # spun off from Exelon, Feb 2022
+  GEV:   {weight: 4, sector: Industrials, proxy: GE}  # spun off from GE, Apr 2024
+  NEE:   {weight: 4, sector: Utilities}
+  GLD:   {weight: 5, sector: Commodities}
+
+panel:
+  max_gap: 5           # forward-fill at most this many missing days
+  min_obs: 252         # drop tickers with less than a year of data
+  common: true         # align every ticker to the common window
+
+# Factor proxies: name -> ticker (long) or [long, short]. DEFAULT is the five below.
+factors: DEFAULT
+# factors:
+#   MKT:   SPY
+#   SIZE:  [IWM, SPY]
+#   VALUE: [IWD, IWF]
+#   MOM:   [MTUM, SPY]
+#   SEMIS: [SMH, SPY]
+#   RATES: TLT             # optional extras: see factors.OPTIONAL_FACTORS
+
+volatility:
+  window: 1000         # estimation window for the out-of-sample comparison
+  refit_every: 21
+
+risk:
+  alphas: [0.99, 0.975]
+  horizons: [1, 10]
+  methods: [normal, historical, fhs, mc_t_copula]   # options: risk.ALL_METHODS
+  n_sims: 20000
+  seed: 0
+  n_boot: 300               # bootstrap resamples for the VaR confidence intervals
+  attribution_cov: ewma     # ewma (conditional) | ledoit_wolf (full sample)
+
+backtest:
+  alpha: 0.99
+  window: 500
+  refit_every: 21
+  n_sims: 5000
+  methods: [normal, historical, garch_normal, fhs]   # options: backtest.ALL_METHODS
+
+stress:
+  scenarios: null      # null = 19 built-in crises, 2000-2025 (see stress.HISTORICAL_SCENARIOS)
+  # scenarios:
+  #   "SVB week (Mar 2023)": ["2023-03-08", "2023-03-13"]
+  shocks: null         # null = built-in hypothetical shocks
+  # shocks:
+  #   "Semis -40%": {SEMIS: -0.40, MKT: -0.15}
+  history_start: auto  # replay history: auto = 30 days before the earliest scenario; a date; or null
+
+optimize:
+  window: 500
+  rebalance_every: 63  # quarterly
+  w_min: 0.0
+  w_max: 1.0
+  strategies: [min_variance, risk_parity]
+  expected_returns: shrunk   # mean | shrunk | zero (used by max_sharpe only)
+
+data:
+  source: yfinance     # yfinance | csv (--offline switches to csv)
+  lookup_sectors: true
+  prices_csv: null     # for source: csv; default <output.dir>/data/prices.csv
+  factor_csv: null
+
+output:
+  dir: reports
+  charts: true
+  pdf: false           # true (or --pdf) also writes report.pdf
+
+# Thresholds for the PDF health checklist (fractions). Only listed keys change;
+# see risklib/pdfreport.py DEFAULT_THRESHOLDS for the full set.
+# pdf:
+#   thresholds:
+#     var_limit:      {limit: 0.05, amber_at: 0.80}
+#     top_risk_share: {amber: 0.20, red: 0.30}
+#     beta_mkt:       {lo: 0.8, hi: 1.2, lo2: 0.5, hi2: 1.5}
