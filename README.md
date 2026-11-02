@@ -1,7 +1,7 @@
 # Risk Library for Long-Only US Equity Portfolios
 ### Developed by Brian Bai, btb2136@columbia.edu
 
-![tests](https://github.com/OWNER/risklib/actions/workflows/tests.yml/badge.svg)
+![tests](https://github.com/bai3brian/portfolio_risklib/actions/workflows/tests.yml/badge.svg)
 
 A Python risk engine for long-only US equity portfolios, modelled on the
 workflow of an institutional risk system. It downloads prices from Yahoo
